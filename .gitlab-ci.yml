@@ -32,7 +32,7 @@ sonarqube-vulnerability-report:
     - main
     - develop
   artifacts:
-    expire_in: 2 day
+    expire_in: 1 day
     reports:
       sast: gl-sast-sonar-report.json
   dependencies:
