@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: CodeIntegration
+
+server:
+  port: 8081
