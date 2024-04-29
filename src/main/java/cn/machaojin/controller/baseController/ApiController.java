@@ -3,7 +3,7 @@ package cn.machaojin.controller.baseController;
 import cn.machaojin.tool.ApiResult;
 
 /**
- * @author machaojin
+ * @author Ma Chaojin
  */
 public class ApiController {
 

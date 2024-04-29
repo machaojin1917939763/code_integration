@@ -3,7 +3,7 @@ package cn.machaojin.tool;
 import lombok.Data;
 
 /**
- * @author machaojin
+ * @author Ma Chaojin
  */
 @Data
 public class ApiResult {

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 /**
  * 开发人员表(Developer)表服务实现类
  *
- * @author makejava
+ * @author Ma Chaojin
  * @since 2024-04-29 16:25:07
  */
 @Service("developerService")

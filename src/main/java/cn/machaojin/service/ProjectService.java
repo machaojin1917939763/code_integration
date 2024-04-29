@@ -6,7 +6,7 @@ import cn.machaojin.entity.Project;
 /**
  * 项目表(Project)表服务接口
  *
- * @author makejava
+ * @author Ma Chaojin
  * @since 2024-04-29 16:25:09
  */
 public interface ProjectService extends IService<Project> {

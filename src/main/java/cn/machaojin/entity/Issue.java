@@ -3,16 +3,19 @@ package cn.machaojin.entity;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 /**
  * 问题表(Issue)表实体类
  *
- * @author makejava
+ * @author Ma Chaojin
  * @since 2024-04-29 16:25:08
  */
-@SuppressWarnings("serial")
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class Issue extends Model<Issue> {
 
     private Integer id;
@@ -36,93 +39,13 @@ public class Issue extends Model<Issue> {
     private Date updatedAt;
 
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getIssueType() {
-        return issueType;
-    }
-
-    public void setIssueType(String issueType) {
-        this.issueType = issueType;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getResolver() {
-        return resolver;
-    }
-
-    public void setResolver(String resolver) {
-        this.resolver = resolver;
-    }
-
-    public Integer getScore() {
-        return score;
-    }
-
-    public void setScore(Integer score) {
-        this.score = score;
-    }
-
-    public Integer getIsResolved() {
-        return isResolved;
-    }
-
-    public void setIsResolved(Integer isResolved) {
-        this.isResolved = isResolved;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getUpdater() {
-        return updater;
-    }
-
-    public void setUpdater(String updater) {
-        this.updater = updater;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     /**
      * 获取主键值
      *
      * @return 主键值
      */
     @Override
-    protected Serializable pkVal() {
+    public Serializable pkVal() {
         return this.id;
     }
 }

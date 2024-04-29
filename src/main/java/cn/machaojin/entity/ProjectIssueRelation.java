@@ -3,16 +3,19 @@ package cn.machaojin.entity;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 /**
  * 项目问题关系表(ProjectIssueRelation)表实体类
  *
- * @author makejava
+ * @author Ma Chaojin
  * @since 2024-04-29 16:25:09
  */
-@SuppressWarnings("serial")
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class ProjectIssueRelation extends Model<ProjectIssueRelation> {
 
     private Integer id;
@@ -30,69 +33,13 @@ public class ProjectIssueRelation extends Model<ProjectIssueRelation> {
     private Date updatedAt;
 
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Integer projectId) {
-        this.projectId = projectId;
-    }
-
-    public Integer getIssueId() {
-        return issueId;
-    }
-
-    public void setIssueId(Integer issueId) {
-        this.issueId = issueId;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getUpdater() {
-        return updater;
-    }
-
-    public void setUpdater(String updater) {
-        this.updater = updater;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     /**
      * 获取主键值
      *
      * @return 主键值
      */
     @Override
-    protected Serializable pkVal() {
+    public Serializable pkVal() {
         return this.id;
     }
 }

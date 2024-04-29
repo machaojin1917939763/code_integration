@@ -3,16 +3,19 @@ package cn.machaojin.entity;
 import java.util.Date;
 
 import com.baomidou.mybatisplus.extension.activerecord.Model;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 /**
  * 项目表(Project)表实体类
  *
- * @author makejava
+ * @author Ma Chaojin
  * @since 2024-04-29 16:25:09
  */
-@SuppressWarnings("serial")
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class Project extends Model<Project> {
 
     private Integer id;
@@ -40,109 +43,13 @@ public class Project extends Model<Project> {
     private Date updatedAt;
 
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getResponsiblePerson() {
-        return responsiblePerson;
-    }
-
-    public void setResponsiblePerson(String responsiblePerson) {
-        this.responsiblePerson = responsiblePerson;
-    }
-
-    public Integer getIssueCount() {
-        return issueCount;
-    }
-
-    public void setIssueCount(Integer issueCount) {
-        this.issueCount = issueCount;
-    }
-
-    public Integer getIssueId() {
-        return issueId;
-    }
-
-    public void setIssueId(Integer issueId) {
-        this.issueId = issueId;
-    }
-
-    public Integer getDeveloperId() {
-        return developerId;
-    }
-
-    public void setDeveloperId(Integer developerId) {
-        this.developerId = developerId;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getUpdater() {
-        return updater;
-    }
-
-    public void setUpdater(String updater) {
-        this.updater = updater;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     /**
      * 获取主键值
      *
      * @return 主键值
      */
     @Override
-    protected Serializable pkVal() {
+    public Serializable pkVal() {
         return this.id;
     }
 }
