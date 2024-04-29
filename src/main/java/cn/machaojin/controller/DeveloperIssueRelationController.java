@@ -7,9 +7,9 @@ import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import cn.machaojin.service.DeveloperIssueRelationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class DeveloperIssueRelationController extends ApiController {
     /**
      * 服务对象
      */
-    @Resource
+    @Autowired
     private DeveloperIssueRelationService developerIssueRelationService;
 
     /**

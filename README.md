@@ -66,4 +66,14 @@ mvn clean install sonar:sonar
 docker run -u root --rm -d -p 8080:8080 -p 50000:50000 -v jenkins-data:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean
 ```
 
+## sonar分析
 
+```shell
+mvn clean verify sonar:sonar \
+  -DskipTests \
+  -X \
+  -Dsonar.projectKey=root_codeintegration_32384cde-3930-428a-9154-46c38417dea5 \
+  -Dsonar.projectName='CodeIntegration' \
+  -Dsonar.host.url=http://localhost:9000/ \
+  -Dsonar.token=sqp_d5840812c84abae3a61ce39b2721d1d9b8d8eb14
+```

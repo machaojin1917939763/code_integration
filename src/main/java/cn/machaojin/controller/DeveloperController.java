@@ -7,9 +7,9 @@ import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import cn.machaojin.service.DeveloperService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class DeveloperController extends ApiController {
     /**
      * 服务对象
      */
-    @Resource
+    @Autowired
     private DeveloperService developerService;
 
     /**

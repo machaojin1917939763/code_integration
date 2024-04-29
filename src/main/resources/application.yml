@@ -1,7 +1,8 @@
 spring:
   application:
     name: CodeIntegration
-
+  profiles:
+    active: druid
 server:
   port: 8080
 
