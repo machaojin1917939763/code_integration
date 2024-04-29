@@ -2,11 +2,11 @@ package cn.machaojin.controller;
 
 
 import cn.machaojin.controller.baseController.ApiController;
+import cn.machaojin.domain.Developer;
 import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.machaojin.entity.Developer;
 import cn.machaojin.service.DeveloperService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

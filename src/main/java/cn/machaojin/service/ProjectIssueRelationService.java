@@ -1,15 +1,13 @@
 package cn.machaojin.service;
 
+import cn.machaojin.domain.ProjectIssueRelation;
 import com.baomidou.mybatisplus.extension.service.IService;
-import cn.machaojin.entity.ProjectIssueRelation;
 
 /**
- * 项目问题关系表(ProjectIssueRelation)表服务接口
- *
- * @author Ma Chaojin
- * @since 2024-04-29 16:25:09
- */
+* @author machaojin
+* @description 针对表【project_issue_relation(项目问题关系表)】的数据库操作Service
+* @createDate 2024-04-29 17:30:59
+*/
 public interface ProjectIssueRelationService extends IService<ProjectIssueRelation> {
 
 }
-

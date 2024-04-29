@@ -1,19 +1,22 @@
 package cn.machaojin.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import cn.machaojin.dao.IssueDao;
-import cn.machaojin.entity.Issue;
+import cn.machaojin.domain.Issue;
+import cn.machaojin.mapper.IssueMapper;
 import cn.machaojin.service.IssueService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
- * 问题表(Issue)表服务实现类
- *
- * @author Ma Chaojin
- * @since 2024-04-29 16:25:08
- */
-@Service("issueService")
-public class IssueServiceImpl extends ServiceImpl<IssueDao, Issue> implements IssueService {
+* @author machaojin
+* @description 针对表【issue(问题表)】的数据库操作Service实现
+* @createDate 2024-04-29 17:30:59
+*/
+@Service
+public class IssueServiceImpl extends ServiceImpl<IssueMapper, Issue>
+    implements IssueService {
 
 }
+
+
+
 

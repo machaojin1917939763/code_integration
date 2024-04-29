@@ -2,10 +2,10 @@ package cn.machaojin.controller;
 
 
 import cn.machaojin.controller.baseController.ApiController;
+import cn.machaojin.domain.DeveloperIssueRelation;
 import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.machaojin.entity.DeveloperIssueRelation;
 import cn.machaojin.service.DeveloperIssueRelationService;
 import org.springframework.web.bind.annotation.*;
 
