@@ -8,38 +8,38 @@ import lombok.Data;
 @Data
 public class ApiResult {
 
-    private int code;
-    private String message;
+    private String code;
+    private String msg;
     private Object data;
 
-    public ApiResult(int code, String message, Object data) {
+    public ApiResult(String code, String msg, Object data) {
         this.code = code;
-        this.message = message;
+        this.msg = msg;
         this.data = data;
     }
-    public ApiResult(int code, String message) {
+    public ApiResult(String code, String msg) {
         this.code = code;
-        this.message = message;
+        this.msg = msg;
     }
-    public ApiResult(int code) {
+    public ApiResult(String code) {
         this.code = code;
     }
     public ApiResult() {}
 
     public static ApiResult success(Object data) {
-        return new ApiResult(200, "success", data);
+        return new ApiResult("0000", "success", data);
     }
 
     public static ApiResult success() {
         return success(null);
     }
 
-    public static ApiResult error(String message) {
-        return new ApiResult(0, message);
+    public static ApiResult error(String msg) {
+        return new ApiResult("0000", msg);
     }
 
-    public static ApiResult error(int code, String message) {
-        return new ApiResult(code, message);
+    public static ApiResult error(String code, String msg) {
+        return new ApiResult(code, msg);
     }
 
     public static ApiResult error() {
