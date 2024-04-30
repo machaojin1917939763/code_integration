@@ -38,3 +38,42 @@ New-SelfSignedCertificate -DnsName "gitlab.chaojin.com" -CertStoreLocation "D:\g
 openssl pkcs12 -in a.pfx -clcerts -nokeys -out certificate.crt
 openssl pkcs12 -in a.pfx -nocerts -nodes -out privatekey.key
 ```
+```
+user = User.find_by(username: 'root')
+user.password = 'Ma123456'
+user.password_confirmation = 'Ma123456'
+user.save!
+```
+
+```
+mvn clean verify sonar:sonar -Dsonar.projectKey=root_codeintegration_32384cde-3930-428a-9154-46c38417dea5 -Dsonar.projectName='CodeIntegration' -Dsonar.host.url=http://localhost:9000/ -Dsonar.token=sqp_58c7c7ce4ece469c1460eb4082cfca59f80cc8cb
+```
+
+```
+sonar-scanner.bat -D"sonar.projectKey=root_codeintegration_32384cde-3930-428a-9154-46c38417dea5" -D"sonar.sources=src/main/java/" -D"sonar.host.url=http://localhost:9000/" -D"sonar.token=sqp_58c7c7ce4ece469c1460eb4082cfca59f80cc8cb" -Dsonar.java.binaries=target/classes
+```
+
+```
+mvn clean install sonar:sonar 
+-Dsonar.projectKey=root_codeintegration_32384cde-3930-428a-9154-46c38417dea5
+-Dsonar.host.url=http://localhost:9000
+-Dsonar.token=sqp_58c7c7ce4ece469c1460eb4082cfca59f80cc8cb
+-Dsonar.sources=src/main/java/
+-Dsonar.java.binaries=target/classes
+```
+
+```
+docker run -u root --rm -d -p 8080:8080 -p 50000:50000 -v jenkins-data:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkinsci/blueocean
+```
+
+## sonar分析
+
+```shell
+mvn clean verify sonar:sonar \
+  -DskipTests \
+  -X \
+  -Dsonar.projectKey=root_codeintegration_32384cde-3930-428a-9154-46c38417dea5 \
+  -Dsonar.projectName='CodeIntegration' \
+  -Dsonar.host.url=http://localhost:9000/ \
+  -Dsonar.token=sqp_d5840812c84abae3a61ce39b2721d1d9b8d8eb14
+```

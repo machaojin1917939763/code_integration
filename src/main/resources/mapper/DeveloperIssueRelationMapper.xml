@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.machaojin.mapper.DeveloperIssueRelationMapper">
+
+    <resultMap id="BaseResultMap" type="cn.machaojin.domain.DeveloperIssueRelation">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="issueId" column="issue_id" jdbcType="INTEGER"/>
+            <result property="developerId" column="developer_id" jdbcType="INTEGER"/>
+            <result property="creator" column="creator" jdbcType="VARCHAR"/>
+            <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+            <result property="updater" column="updater" jdbcType="VARCHAR"/>
+            <result property="updatedAt" column="updated_at" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,issue_id,developer_id,
+        creator,created_at,updater,
+        updated_at
+    </sql>
+</mapper>

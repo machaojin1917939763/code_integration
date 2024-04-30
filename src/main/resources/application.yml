@@ -1,6 +1,15 @@
 spring:
   application:
     name: CodeIntegration
-
+  profiles:
+    active: druid
 server:
   port: 8080
+
+mybatis-plus:
+  type-aliases-package: cn.machaojin.mapper
+  mapper-locations: # mapper映射文件位置
+    - classpath:mapper/*.xml
+  configuration:
+    #配置日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
