@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author: Ma, Chaojin(C | TT - 33)
@@ -41,13 +42,19 @@ public class LoginController {
     @JwtIgnore
     @GetMapping("/auth/getUserInfo")
     public ApiResult getUserInfo() {
+        List<String> rolesList = new ArrayList<>();
+        List<String> buttonsList = new ArrayList<>();
+        rolesList.add("R_SUPER");
+        buttonsList.add("B_CODE1");
+        buttonsList.add("B_CODE2");
+        buttonsList.add("B_CODE3");
         return ApiResult.success(
                 User
                         .builder()
-                        .userId("1")
-                        .userName("ma")
-                        .buttons(new ArrayList<>())
-                        .roles(new ArrayList<>())
+                        .userid("0")
+                        .username("Ma Chaojin")
+                        .buttons(buttonsList)
+                        .roles(rolesList)
                 .build());
     }
 
@@ -55,7 +62,6 @@ public class LoginController {
     @JwtIgnore
     @GetMapping("/error")
     public ApiResult error() {
-        log.error("1111");
         return ApiResult.success();
     }
 }

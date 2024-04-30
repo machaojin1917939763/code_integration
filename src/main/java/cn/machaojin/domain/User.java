@@ -12,8 +12,8 @@ import java.util.List;
 @Data
 @Builder
 public class User {
-    private String userId;
-    private String userName;
+    private String userid;
+    private String username;
     private List<String> roles;
     private List<String> buttons;
 }

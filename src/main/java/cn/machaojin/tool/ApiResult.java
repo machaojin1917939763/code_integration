@@ -2,6 +2,9 @@ package cn.machaojin.tool;
 
 import lombok.Data;
 
+import static cn.machaojin.constants.StateConstant.SUCCESS;
+import static cn.machaojin.constants.StateConstant.SUCCESS_MESSAGE;
+
 /**
  * @author Ma Chaojin
  */
@@ -27,7 +30,7 @@ public class ApiResult {
     public ApiResult() {}
 
     public static ApiResult success(Object data) {
-        return new ApiResult("0000", "success", data);
+        return new ApiResult(SUCCESS, SUCCESS_MESSAGE, data);
     }
 
     public static ApiResult success() {
@@ -35,7 +38,7 @@ public class ApiResult {
     }
 
     public static ApiResult error(String msg) {
-        return new ApiResult("0000", msg);
+        return new ApiResult(SUCCESS, msg);
     }
 
     public static ApiResult error(String code, String msg) {
