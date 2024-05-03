@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * 问题表
+ * @author machaojin
  * @TableName issue
  */
 @TableName(value ="issue")

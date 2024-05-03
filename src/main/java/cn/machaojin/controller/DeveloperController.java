@@ -1,11 +1,12 @@
 package cn.machaojin.controller;
 
 
+import cn.machaojin.annotation.CodeLog;
 import cn.machaojin.controller.baseController.ApiController;
 import cn.machaojin.domain.Developer;
+import cn.machaojin.service.DeveloperService;
 import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import cn.machaojin.service.DeveloperService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ import static cn.machaojin.tool.ApiResult.success;
  * @since 2024-04-29 16:25:01
  */
 @RestController
-@RequestMapping("developer")
+@RequestMapping("/developer")
 public class DeveloperController extends ApiController {
     /**
      * 服务对象
@@ -33,12 +34,17 @@ public class DeveloperController extends ApiController {
     /**
      * 分页查询所有数据
      *
-     * @param page      分页对象
      * @param developer 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public ApiResult selectAll(Page<Developer> page, Developer developer) {
+    @CodeLog
+    @PostMapping("/getList")
+    public ApiResult selectAll(
+            @RequestParam(value = "current", defaultValue = "1") int current,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            @RequestBody Developer developer) {
+
+        Page<Developer> page = new Page<>(current, pageSize);
         return success(this.developerService.page(page, new QueryWrapper<>(developer)));
     }
 

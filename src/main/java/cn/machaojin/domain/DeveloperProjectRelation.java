@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * 开发人员项目关系表
+ * @author machaojin
  * @TableName developer_project_relation
  */
 @TableName(value ="developer_project_relation")

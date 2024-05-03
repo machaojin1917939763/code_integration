@@ -3,10 +3,10 @@ package cn.machaojin.controller;
 
 import cn.machaojin.controller.baseController.ApiController;
 import cn.machaojin.domain.Issue;
+import cn.machaojin.service.IssueService;
 import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.machaojin.service.IssueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +22,7 @@ import static cn.machaojin.tool.ApiResult.success;
  * @since 2024-04-29 16:25:08
  */
 @RestController
-@RequestMapping("issue")
+@RequestMapping("/issue")
 public class IssueController extends ApiController {
     /**
      * 服务对象
@@ -37,8 +37,11 @@ public class IssueController extends ApiController {
      * @param issue 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public ApiResult selectAll(Page<Issue> page, Issue issue) {
+    @PostMapping("/getList")
+    public ApiResult selectAll(@RequestParam(value = "current", defaultValue = "1") int current,
+                               @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+                               @RequestBody Issue issue) {
+        Page<Issue> page = new Page<>(current, pageSize);
         return success(this.issueService.page(page, new QueryWrapper<>(issue)));
     }
 

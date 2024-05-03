@@ -3,12 +3,11 @@ package cn.machaojin.controller;
 
 import cn.machaojin.controller.baseController.ApiController;
 import cn.machaojin.domain.Project;
+import cn.machaojin.service.ProjectService;
 import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import cn.machaojin.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
@@ -34,12 +33,14 @@ public class ProjectController extends ApiController {
     /**
      * 分页查询所有数据
      *
-     * @param page    分页对象
      * @param project 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public ApiResult selectAll(Page<Project> page, Project project) {
+    @PostMapping("/getList")
+    public ApiResult selectAll(@RequestParam(value = "current", defaultValue = "1") int current,
+                               @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+                               @RequestBody Project project) {
+        Page<Project> page = new Page<>(current, pageSize);
         return success(this.projectService.page(page, new QueryWrapper<>(project)));
     }
 

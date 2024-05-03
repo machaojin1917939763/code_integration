@@ -2,32 +2,36 @@ package cn.machaojin.tool;
 
 import lombok.Data;
 
+import static cn.machaojin.constants.StateConstant.*;
+
 /**
  * @author Ma Chaojin
  */
 @Data
 public class ApiResult {
 
-    private int code;
+    private Integer code;
     private String message;
-    private Object data;
+    private String type;
+    private Object result;
 
-    public ApiResult(int code, String message, Object data) {
+    public ApiResult(Integer code, String message, Object result, String type) {
         this.code = code;
         this.message = message;
-        this.data = data;
+        this.result = result;
+        this.type = type;
     }
-    public ApiResult(int code, String message) {
+    public ApiResult(Integer code, String message) {
         this.code = code;
         this.message = message;
     }
-    public ApiResult(int code) {
+    public ApiResult(Integer code) {
         this.code = code;
     }
     public ApiResult() {}
 
-    public static ApiResult success(Object data) {
-        return new ApiResult(200, "success", data);
+    public static ApiResult success(Object result) {
+        return new ApiResult(SUCCESS, SUCCESS_MESSAGE, result,TYPE_SUCCESS);
     }
 
     public static ApiResult success() {
@@ -35,10 +39,10 @@ public class ApiResult {
     }
 
     public static ApiResult error(String message) {
-        return new ApiResult(0, message);
+        return new ApiResult(SUCCESS, message);
     }
 
-    public static ApiResult error(int code, String message) {
+    public static ApiResult error(Integer code, String message) {
         return new ApiResult(code, message);
     }
 

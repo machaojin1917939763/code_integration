@@ -2,3 +2,5 @@
 * DEVELOP-002（2024年4月9日）：搭建GitLab Runner，每次提交代码通过GitLab Runner上传结果到SonarQube
 * DEVELOP-002（2024年4月24日）：测试代码GitLab Runner是否能正常运行
 * DEVELOP-003（2024年4月29日）：增加初始代码，增加数据库表、根据数据库将表，编写CRUD代码
+* DEVELOP-004（2024年4月30日）：整合前端登录，增加jwt token校验、增加日志注解
+* DEVELOP-004（2024年月3日）：整合前端，实现表单数据的基本展示
