@@ -52,6 +52,7 @@ public class JwtTokenUtil {
      * @param token
      */
     public static Claims verifyToken(String token) throws Exception {
+        token = token.replace(TOKEN_PREFIX, "");
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey(SECRET_KEY)

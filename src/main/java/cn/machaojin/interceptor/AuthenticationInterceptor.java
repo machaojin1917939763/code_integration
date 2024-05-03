@@ -25,6 +25,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         // 从http请求头中取出token
         final String token = request.getHeader(JwtTokenUtil.AUTH_HEADER_KEY);
         log.info(request.getRequestURI());
+        log.info(token);
         //如果不是映射到方法，直接通过
         if(!(handler instanceof HandlerMethod handlerMethod)){
             return true;

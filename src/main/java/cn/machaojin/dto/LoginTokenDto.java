@@ -17,5 +17,4 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class LoginTokenDto implements Serializable {
     private String token;
-    private String refreshToken;
 }

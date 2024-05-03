@@ -2,8 +2,7 @@ package cn.machaojin.tool;
 
 import lombok.Data;
 
-import static cn.machaojin.constants.StateConstant.SUCCESS;
-import static cn.machaojin.constants.StateConstant.SUCCESS_MESSAGE;
+import static cn.machaojin.constants.StateConstant.*;
 
 /**
  * @author Ma Chaojin
@@ -11,38 +10,40 @@ import static cn.machaojin.constants.StateConstant.SUCCESS_MESSAGE;
 @Data
 public class ApiResult {
 
-    private String code;
-    private String msg;
-    private Object data;
+    private Integer code;
+    private String message;
+    private String type;
+    private Object result;
 
-    public ApiResult(String code, String msg, Object data) {
+    public ApiResult(Integer code, String message, Object result, String type) {
         this.code = code;
-        this.msg = msg;
-        this.data = data;
+        this.message = message;
+        this.result = result;
+        this.type = type;
     }
-    public ApiResult(String code, String msg) {
+    public ApiResult(Integer code, String message) {
         this.code = code;
-        this.msg = msg;
+        this.message = message;
     }
-    public ApiResult(String code) {
+    public ApiResult(Integer code) {
         this.code = code;
     }
     public ApiResult() {}
 
-    public static ApiResult success(Object data) {
-        return new ApiResult(SUCCESS, SUCCESS_MESSAGE, data);
+    public static ApiResult success(Object result) {
+        return new ApiResult(SUCCESS, SUCCESS_MESSAGE, result,TYPE_SUCCESS);
     }
 
     public static ApiResult success() {
         return success(null);
     }
 
-    public static ApiResult error(String msg) {
-        return new ApiResult(SUCCESS, msg);
+    public static ApiResult error(String message) {
+        return new ApiResult(SUCCESS, message);
     }
 
-    public static ApiResult error(String code, String msg) {
-        return new ApiResult(code, msg);
+    public static ApiResult error(Integer code, String message) {
+        return new ApiResult(code, message);
     }
 
     public static ApiResult error() {
