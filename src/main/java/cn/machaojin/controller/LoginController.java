@@ -8,10 +8,10 @@ import cn.machaojin.dto.UserDto;
 import cn.machaojin.tool.ApiResult;
 import cn.machaojin.tool.JwtTokenUtil;
 import com.alibaba.fastjson.JSON;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**

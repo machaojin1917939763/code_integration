@@ -5,20 +5,37 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.4</version>
+        <version>2.7.18</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cn.machaojin</groupId>
     <artifactId>CodeIntegration</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>CodeIntegration</name>
-    <description>CodeIntegration</description>
+    <description>CodeIntegration，一个高质量的检测代码质量并计算积分的系统</description>
+
     <properties>
-        <sonar.projectKey>root_codeintegration_32384cde-3930-428a-9154-46c38417dea5</sonar.projectKey>
+<!--        <sonar.projectKey>root_codeintegration_32384cde-3930-428a-9154-46c38417dea5</sonar.projectKey>-->
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        <!-- 如果需要，添加认证信息 -->
+        <sonar.login>admin</sonar.login>
+        <sonar.password>123456</sonar.password>
         <sonar.projectName>CodeIntegration</sonar.projectName>
         <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
         <java.version>17</java.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>2021.0.8</version> <!-- 使用与Spring Boot版本兼容的Spring Cloud版本 -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
 
         <dependency>
@@ -60,7 +77,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
-            <version>3.0.3</version>
+            <version>2.1.2</version>
         </dependency>
 
         <dependency>
@@ -122,10 +139,21 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
+<!--        发送http请求-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.9.1.2184</version> <!-- 使用最新版本 -->
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
