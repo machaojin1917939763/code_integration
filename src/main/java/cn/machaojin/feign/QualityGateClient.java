@@ -1,10 +1,14 @@
 package cn.machaojin.feign;
 
-import cn.machaojin.domain.sonar.SearchResult;
+import cn.machaojin.domain.sonar.issue_snippets.ComponentDetails;
+import cn.machaojin.domain.sonar.search.AnalysisResult;
+import cn.machaojin.domain.sonar.search_projects.SearchResult;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Map;
 
 /**
  * @author Ma Chaojin
@@ -90,7 +94,7 @@ public interface QualityGateClient {
     String showQualityGates(@RequestParam(name = "name") String name);
 
     @GetMapping("/api/issues/search")
-    String searchIssues(
+    AnalysisResult searchIssues(
             @RequestParam(name = "components") String components,
             @RequestParam(name = "s") String sort,
             @RequestParam(name = "issueStatuses") String issueStatuses,
@@ -101,5 +105,5 @@ public interface QualityGateClient {
     );
 
     @GetMapping("/api/sources/issue_snippets")
-    String issueSnippets(@RequestParam(name = "issueKey") String issueKey);
+    Map<String, ComponentDetails> issueSnippets(@RequestParam(name = "issueKey") String issueKey);
 }

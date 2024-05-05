@@ -1,4 +1,4 @@
-package cn.machaojin.domain.sonar;
+package cn.machaojin.domain.sonar.search_projects;
 
 import lombok.Builder;
 import lombok.Data;

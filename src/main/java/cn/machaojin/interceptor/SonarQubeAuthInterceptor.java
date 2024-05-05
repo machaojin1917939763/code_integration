@@ -20,6 +20,6 @@ public class SonarQubeAuthInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         template.header("Authorization", "Bearer " + token);
-        template.header("Content-Type", "application/json");
+//        template.header("Content-Type", "application/json");
     }
 }

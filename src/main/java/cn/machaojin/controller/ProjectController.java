@@ -63,6 +63,7 @@ public class ProjectController extends ApiController {
      */
     @PostMapping
     public ApiResult insert(@RequestBody Project project) {
+
         return success(this.projectService.save(project));
     }
 
