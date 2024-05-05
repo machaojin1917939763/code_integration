@@ -54,6 +54,11 @@ public class Issue implements Serializable {
     private String creator;
 
     /**
+     * 问题创建者
+     */
+    private String issueCreator;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

@@ -24,6 +24,11 @@ public class Developer implements Serializable {
     private Integer id;
 
     /**
+     * 开发人员头像
+     */
+    private String avatar;
+
+    /**
      * 开发人员姓名
      */
     private String name;
