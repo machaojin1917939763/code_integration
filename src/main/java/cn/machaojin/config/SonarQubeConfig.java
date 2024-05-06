@@ -14,4 +14,5 @@ import org.springframework.context.annotation.Configuration;
 public class SonarQubeConfig {
     private String baseUrl;
     private String token;
+    private String basePackage;
 }
