@@ -15,7 +15,7 @@ public class Component {
     private String key;
     private String name;
     private String qualifier;
-    private boolean isFavorite;
+    private Boolean isFavorite;
     private String analysisDate;
     private List<String> tags;
     private String visibility;

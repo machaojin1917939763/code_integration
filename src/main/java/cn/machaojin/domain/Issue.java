@@ -52,9 +52,14 @@ public class Issue implements Serializable {
     private String creator;
 
     /**
-     * 问题创建者
+     * BUG缔造者 project_name
      */
     private String issueCreator;
+
+    /**
+     * 所属项目
+     */
+    private String projectName;
 
     /**
      * 创建时间
