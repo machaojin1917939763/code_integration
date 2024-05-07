@@ -1,7 +1,10 @@
 package cn.machaojin.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,6 +16,9 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="project")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Project implements Serializable {
     /**
      * 
@@ -24,6 +30,11 @@ public class Project implements Serializable {
      * 项目名称
      */
     private String name;
+
+    /**
+     * sonar唯一值
+     */
+    private String sonarKey;
 
     /**
      * 项目地址

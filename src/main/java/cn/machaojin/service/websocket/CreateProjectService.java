@@ -1,28 +1,27 @@
 package cn.machaojin.service.websocket;
 
 import cn.machaojin.config.SonarQubeConfig;
+import cn.machaojin.domain.Issue;
 import cn.machaojin.domain.Project;
+import cn.machaojin.domain.sonar.search.AnalysisResult;
+import cn.machaojin.domain.sonar.search.Issues;
 import cn.machaojin.domain.sonar.search_projects.Component;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
 import cn.machaojin.feign.QualityGateClient;
+import cn.machaojin.service.IssueService;
+import cn.machaojin.service.ProjectService;
+import cn.machaojin.tool.RedisUtil;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.*;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -36,6 +35,9 @@ public class CreateProjectService {
 
     private final SonarQubeConfig sonarQubeConfig;
     private final QualityGateClient qualityGateClient;
+    private final ProjectService projectService;
+    private final IssueService issueService;
+    private final RedisUtil redisUtil;
 
 
     public void createProject(WebSocketSession session, WebSocketMessage<?> message) throws IOException {
@@ -50,19 +52,8 @@ public class CreateProjectService {
         if (!createFile(file)) {
             session.sendMessage(new TextMessage("文件夹存在！直接启动分析！"));
             session.sendMessage(new TextMessage("20"));
-            if ("Maven".equals(project.getType())) {
-                //重载maven项目
-                if (reloadMaven(path, session)) {
-                    session.sendMessage(new TextMessage("重载maven项目成功"));
-                    session.sendMessage(new TextMessage("70"));
-                } else {
-                    session.sendMessage(new TextMessage("重载maven项目失败"));
-                    session.sendMessage(new TextMessage("exception"));
-                    return;
-                }
-            }
             startSonarQube(session, path, commandLine);
-            session.sendMessage(new TextMessage("exception"));
+            session.close();
             return;
         }
         session.sendMessage(new TextMessage("创建文件夹成功"));
@@ -73,31 +64,13 @@ public class CreateProjectService {
         if (!carryOut(file, "git clone --progress " + project.getUrl(), session)) {
             session.sendMessage(new TextMessage("克隆仓库失败！请检查"));
             session.sendMessage(new TextMessage("exception"));
+            session.close();
             return;
         }
         session.sendMessage(new TextMessage("克隆仓库成功"));
         session.sendMessage(new TextMessage("40"));
 
-        if ("Maven".equals(project.getType())) {
-            session.sendMessage(new TextMessage("修改pom.xml"));
-            if (editPom(getPomPath(path), session)) {
-                session.sendMessage(new TextMessage("修改pom.xml文件成功"));
-                session.sendMessage(new TextMessage("50"));
-            } else {
-                session.sendMessage(new TextMessage("修改pom.xml文件失败"));
-                session.sendMessage(new TextMessage("exception"));
-                return;
-            }
-            //重载maven项目
-            if (reloadMaven(path, session)) {
-                session.sendMessage(new TextMessage("重载maven项目成功"));
-                session.sendMessage(new TextMessage("70"));
-            } else {
-                session.sendMessage(new TextMessage("重载maven项目失败"));
-                session.sendMessage(new TextMessage("exception"));
-                return;
-            }
-        } else {
+        if (!"Maven".equals(project.getType())) {
             session.sendMessage(new TextMessage("55"));
             session.sendMessage(new TextMessage("添加sonar-project.properties文件"));
             if (addProperties(path, project, session)) {
@@ -106,6 +79,7 @@ public class CreateProjectService {
             } else {
                 session.sendMessage(new TextMessage("添加sonar-project.properties文件失败"));
                 session.sendMessage(new TextMessage("exception"));
+                session.close();
                 return;
             }
         }
@@ -119,6 +93,12 @@ public class CreateProjectService {
 
             // 生成不包含"-"的UUID
             String projectKey = UUID.randomUUID().toString().replace("-", "");
+            LambdaQueryWrapper<Project> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Project::getName,project.getName());
+            Project serviceOne = projectService.getOne(wrapper);
+            if (serviceOne != null && serviceOne.getSonarKey() != null && !serviceOne.getSonarKey().isEmpty()) {
+                projectKey = serviceOne.getSonarKey();
+            }
             result.append(" -Dsonar.projectKey=").append(projectKey);
 
             // 添加项目名称
@@ -151,6 +131,7 @@ public class CreateProjectService {
             System.err.println("Error writing properties file: " + e.getMessage());
             e.printStackTrace();
             session.sendMessage(new TextMessage("exception"));
+            session.close();
             return Boolean.FALSE;
         }
         return Boolean.TRUE;
@@ -166,22 +147,17 @@ public class CreateProjectService {
         } else {
             session.sendMessage(new TextMessage("SonarQube分析失败"));
             session.sendMessage(new TextMessage("exception"));
+            session.close();
             return;
         }
         session.sendMessage(new TextMessage("SonarQube分析结束"));
         session.sendMessage(new TextMessage("100"));
+        session.close();
     }
 
     private Boolean sonarQube(String path, WebSocketSession session, String commandLine) {
         File file = new File(path);
         carryOut(file, commandLine, session);
-        return Boolean.TRUE;
-    }
-
-    private Boolean reloadMaven(String path, WebSocketSession session) {
-        File file = new File(path);
-        carryOut(file, "mvn clean", session);
-//        "mvn dependency:resolve && mvn clean && mvn install"
         return Boolean.TRUE;
     }
 
@@ -196,80 +172,6 @@ public class CreateProjectService {
         String[] split = gitLink.split("/");
         String[] split1 = split[split.length - 1].split("\\.");
         return fileName + "\\" + split1[0];
-    }
-
-    /**
-     * 找出最外层的一个pom.xml文件
-     *
-     * @return
-     */
-    private String getPomPath(String path) {
-        File file = new File(path);
-        File[] files = file.listFiles();
-        for (int i = 0; i < Objects.requireNonNull(files).length; i++) {
-            if ("pom.xml".equals(files[i].getName())) {
-                return files[i].getAbsolutePath();
-            }
-        }
-        return null;
-    }
-
-    private Boolean editPom(String path, WebSocketSession session) throws IOException {
-        if (path == null) {
-            session.sendMessage(new TextMessage("此仓库中没有pom.xml文件，请检查是否是Maven项目"));
-            session.sendMessage(new TextMessage("exception"));
-            return Boolean.FALSE;
-        }
-        // 读取pom.xml文件内容
-        session.sendMessage(new TextMessage("读取pom.xml文件内容"));
-        String pomContent = FileUtils.readFileToString(new File(path), "UTF-8");
-
-        // 创建MavenXpp3Reader实例
-        session.sendMessage(new TextMessage("创建MavenXpp3Reader实例"));
-        MavenXpp3Reader reader = new MavenXpp3Reader();
-
-        // 将文件内容转换为输入流
-        session.sendMessage(new TextMessage("将文件内容转换为输入流"));
-        InputStream inputStream = new ByteArrayInputStream(pomContent.getBytes());
-
-        // 解析pom.xml文件内容
-        session.sendMessage(new TextMessage("解析pom.xml文件内容"));
-        Model model = null;
-        try {
-            model = reader.read(inputStream);
-        } catch (XmlPullParserException e) {
-            session.sendMessage(new TextMessage("exception"));
-            throw new RuntimeException(e);
-        }
-        Build build = model.getBuild();
-
-        //添加plugin
-        session.sendMessage(new TextMessage("添加plugin"));
-        Plugin plugin = new Plugin();
-        plugin.setGroupId("org.sonarsource.scanner.maven");
-        plugin.setArtifactId("sonar-maven-plugin");
-        plugin.setVersion("3.9.1.2184");
-        build.addPlugin(plugin);
-
-        //添加Properties
-        session.sendMessage(new TextMessage("添加Properties"));
-        Properties properties = model.getProperties();
-        properties.put("sonar.host.url", "http://localhost:9000");
-        properties.put("sonar.login", "admin");
-        properties.put("sonar.password", "123456");
-        // 创建MavenXpp3Writer实例
-        MavenXpp3Writer writer = new MavenXpp3Writer();
-        // 将修改后的Model对象写回到pom.xml文件中
-        session.sendMessage(new TextMessage("正在更新pom.xml文件"));
-        try (FileWriter fileWriter = new FileWriter(new File(path))) {
-            writer.write(fileWriter, model);
-            session.sendMessage(new TextMessage("pom.xml文件更新成功"));
-        } catch (IOException e) {
-            session.sendMessage(new TextMessage("更新pom.xml文件时发生错误：" + e.getMessage()));
-            session.sendMessage(new TextMessage("exception"));
-            return Boolean.FALSE;
-        }
-        return Boolean.TRUE;
     }
 
     public Boolean createFile(File file) {
@@ -289,16 +191,13 @@ public class CreateProjectService {
         processBuilder.directory(directory);
         // Windows平台通常使用cmd.exe
         processBuilder.command("cmd.exe", "/c", command);
-
         try {
             Process process = processBuilder.start();
-
             // 读取标准输出流
             Thread outputThread = new Thread(() -> {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.out.println(line);
                         session.sendMessage(new TextMessage(line));
                     }
                 } catch (IOException e) {
@@ -310,7 +209,6 @@ public class CreateProjectService {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.out.println(line);
                         session.sendMessage(new TextMessage(line));
                     }
                 } catch (IOException e) {
@@ -340,7 +238,42 @@ public class CreateProjectService {
                 "reliability_rating%2Csecurity_rating%2Csecurity_review_rating%2Csqale_rating%2Ccoverage%2Cduplicated_lines_density%2Cncloc%2Calert_status%2Clanguages%2Ctags%2Cqualifier",
                 "analysisDate%2CleakPeriodDate", "", "");
         for (Component component : searchResult.getComponents()) {
-
+            LambdaQueryWrapper<Project> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Project::getName,component.getName());
+            AnalysisResult analysisResult = qualityGateClient.searchIssues(
+                    component.getKey(),
+                    "FILE_LINE",
+                    "CONFIRMED%2COPEN",
+                    500,
+                    1,
+                    "_all",
+                    "Asia%2FShanghai"
+            );
+            List<Issues> resultIssues = analysisResult.getIssues();
+            //先删掉这个项目的所有问题
+            issueService.remove(new LambdaQueryWrapper<>(Issue.class).eq(Issue::getProjectName,component.getName()));
+            for (Issues resultIssue : resultIssues) {
+                Issue issue = Issue
+                        .builder()
+                        .projectName(component.getName())
+                        .issueCreator(resultIssue.getAuthor())
+                        .issueType(resultIssue.getType())
+                        .isResolved(resultIssue.getStatus())
+                        .description(resultIssue.getMessage())
+                        .score(getScore(resultIssue.getType()))
+                        .issueKey(resultIssue.getKey())
+                        .build();
+                issueService.save(issue);
+                redisUtil.set(resultIssue.getKey(),JSONObject.toJSONString(resultIssue));
+            }
+            projectService.update(Project.builder().sonarKey(component.getKey()).issueCount(analysisResult.getTotal()).build(),wrapper);
         }
+    }
+    private Integer getScore(String issueType){
+        return switch (issueType) {
+            case "CODE_SMELL" -> 10;
+            case "BUG" -> 20;
+            default -> 5;
+        };
     }
 }

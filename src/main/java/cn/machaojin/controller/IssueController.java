@@ -74,6 +74,8 @@ public class IssueController extends ApiController {
      */
     @PutMapping
     public ApiResult update(@RequestBody Issue issue) {
+        //TODO 获取当前登录的用户
+        issue.setResolver("admin");
         return success(this.issueService.updateById(issue));
     }
 

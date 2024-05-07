@@ -2,30 +2,41 @@ package cn.machaojin.controller;
 
 import cn.machaojin.annotation.CodeLog;
 import cn.machaojin.annotation.JwtIgnore;
-import cn.machaojin.domain.sonar.issue_snippets.CodeAnalysis;
 import cn.machaojin.domain.sonar.issue_snippets.ComponentDetails;
 import cn.machaojin.domain.sonar.search.AnalysisResult;
+import cn.machaojin.domain.sonar.search.Comment;
+import cn.machaojin.domain.sonar.search.Issues;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
+import cn.machaojin.domain.sonar.show.RuleDetail;
+import cn.machaojin.dto.CommentDto;
 import cn.machaojin.feign.QualityGateClient;
 import cn.machaojin.tool.ApiResult;
+import cn.machaojin.tool.RedisUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Ma Chaojin
  * @since 2024-05-03 20:41
  */
+@Slf4j
 @Data
 @RestController
 @RequestMapping("sonar")
 @RequiredArgsConstructor
 public class SonarQubeController {
     private final QualityGateClient qualityGateClient;
+    private final RedisUtil redisUtil;
 
 
     @CodeLog
@@ -57,13 +68,58 @@ public class SonarQubeController {
 
     @CodeLog
     @JwtIgnore
-    @GetMapping("/sources/issue_snippets")
-    public ApiResult issueSnippets(){
+    @PostMapping("/sources/issue_snippets")
+    public ApiResult issueSnippets(@RequestBody String issueKey){
         Map<String, ComponentDetails> stringComponentDetailsMap = qualityGateClient.issueSnippets(
-                "f4faca4a-a622-430a-af08-59778b3756e1"
+                issueKey.trim().replace("\"","")
         );
-        CodeAnalysis codeAnalysis = CodeAnalysis.builder().analysisDetails(stringComponentDetailsMap).build();
-        return ApiResult.success(codeAnalysis);
+        ComponentDetails componentDetails = new ComponentDetails();
+        for (Map. Entry<String, ComponentDetails> entry : stringComponentDetailsMap. entrySet()){
+            componentDetails = entry.getValue();
+        }
+        return ApiResult.success(componentDetails);
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @PostMapping("/sources/issue_redis")
+    public ApiResult getIssueForRedis(@RequestBody String issueKey){
+        Object object = redisUtil.get(issueKey.trim().replace("\"",""));
+        return ApiResult.success(object);
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @PostMapping("/sources/rule")
+    public ApiResult getRule(@RequestBody String ruleKey){
+        RuleDetail ruleDetail = qualityGateClient.showRules(ruleKey.trim().replace("\"", ""));
+        return ApiResult.success(ruleDetail);
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @PostMapping("/sources/add_comment")
+    public ApiResult postNewComment(@RequestBody CommentDto commentDto){
+        commentDto.setIssue(commentDto.getIssue().trim().replace("\"", ""));
+        commentDto.setText(commentDto.getText().trim().replace("\"", ""));
+        log.info(commentDto.toString());
+        String comment = qualityGateClient.addComment(commentDto.getIssue(), commentDto.getText());
+        JSONObject jsonObject = JSON.parseObject(comment);
+        // 获取issue对象
+        JSONObject issue = jsonObject.getJSONObject("issue");
+        // 从issue对象中获取comments数组
+        JSONArray comments = issue.getJSONArray("comments");
+        List<Comment> list = new ArrayList<>();
+        for (Object object : comments) {
+            list.add(((JSONObject) object).toJavaObject(Comment.class));
+        }
+        String key = (String) issue.get("key");
+        String issuesJson = (String) redisUtil.get(key);
+        Issues issues = JSON.parseObject(issuesJson, Issues.class);
+        list.sort(Comparator.comparing(Comment::getCreatedAt).reversed());
+        issues.setComments(list);
+        redisUtil.set((String) issue.get("key"), JSON.toJSONString(issues));
+        return ApiResult.success(comment);
     }
 
 }

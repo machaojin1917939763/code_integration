@@ -1,7 +1,10 @@
 package cn.machaojin.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,6 +16,9 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="issue")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Issue implements Serializable {
     /**
      * 
@@ -41,9 +47,14 @@ public class Issue implements Serializable {
     private Integer score;
 
     /**
+     * key
+     */
+    private String issueKey;
+
+    /**
      * 是否解决
      */
-    private Integer isResolved;
+    private String isResolved;
 
     /**
      * 创建者

@@ -3,6 +3,15 @@ spring:
     name: CodeIntegration
   profiles:
     active: druid
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    lettuce:
+      pool:
+        max-idle: 16
+        max-active: 32
+        min-idle: 8
 server:
   port: 8080
 
@@ -17,4 +26,4 @@ mybatis-plus:
 sonar:
   baseUrl: http://localhost:9000
   token: squ_0d47db2d394dad0d52bc10f2da3d4b70f9345c4a
-  basePackage: D:\\GitRepo
+  basePackage: D:\\GitProject

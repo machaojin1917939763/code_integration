@@ -3,9 +3,11 @@ package cn.machaojin.feign;
 import cn.machaojin.domain.sonar.issue_snippets.ComponentDetails;
 import cn.machaojin.domain.sonar.search.AnalysisResult;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
+import cn.machaojin.domain.sonar.show.RuleDetail;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
@@ -106,4 +108,10 @@ public interface QualityGateClient {
 
     @GetMapping("/api/sources/issue_snippets")
     Map<String, ComponentDetails> issueSnippets(@RequestParam(name = "issueKey") String issueKey);
+
+    @GetMapping("/api/rules/show")
+    RuleDetail showRules(@RequestParam(name = "key") String key);
+
+    @PostMapping("/api/issues/add_comment")
+    String addComment(@RequestParam String issue,@RequestParam String text);
 }
