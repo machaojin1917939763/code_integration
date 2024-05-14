@@ -28,8 +28,15 @@ public class CreateProjectHandler implements WebSocketHandler {
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         log.info("CreateProjectHandler收到消息{}",message);
-        createProjectService.createProject(session,message);
+        try {
+            createProjectService.createProject(session,message);
+        }catch (Exception exception){
+            exception.printStackTrace();
+            return;
+        }
+        Thread.sleep(20 * 1000);
         createProjectService.analyzeProject();
+
     }
 
     @Override

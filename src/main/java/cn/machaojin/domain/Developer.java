@@ -1,7 +1,10 @@
 package cn.machaojin.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -13,6 +16,9 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="developer")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Developer implements Serializable {
     /**
      * 
@@ -29,6 +35,16 @@ public class Developer implements Serializable {
      * 开发人员姓名
      */
     private String name;
+
+    /**
+     * 开发人员姓名
+     */
+    private String password;
+
+    /**
+     * 开发人员姓名
+     */
+    private String loginStatus;
 
     /**
      * 性别

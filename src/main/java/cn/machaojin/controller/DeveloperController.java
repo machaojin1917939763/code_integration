@@ -49,6 +49,18 @@ public class DeveloperController extends ApiController {
     }
 
     /**
+     * 分页查询所有数据
+     * @return 所有数据
+     */
+    @CodeLog
+    @PostMapping("/sort")
+    public ApiResult selectAllBySort() {
+        List<Developer> list = developerService.list();
+        list.sort((a,b)-> b.getScore() - a.getScore());
+        return success(list);
+    }
+
+    /**
      * 通过主键查询单条数据
      *
      * @param id 主键

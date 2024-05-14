@@ -1,6 +1,7 @@
 package cn.machaojin.service.websocket;
 
 import cn.machaojin.config.SonarQubeConfig;
+import cn.machaojin.domain.Developer;
 import cn.machaojin.domain.Issue;
 import cn.machaojin.domain.Project;
 import cn.machaojin.domain.sonar.search.AnalysisResult;
@@ -8,8 +9,10 @@ import cn.machaojin.domain.sonar.search.Issues;
 import cn.machaojin.domain.sonar.search_projects.Component;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
 import cn.machaojin.feign.QualityGateClient;
+import cn.machaojin.service.DeveloperService;
 import cn.machaojin.service.IssueService;
 import cn.machaojin.service.ProjectService;
+import cn.machaojin.service.jgit.JGitService;
 import cn.machaojin.tool.RedisUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,6 +26,9 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.*;
 import java.util.List;
 import java.util.UUID;
+
+import static cn.machaojin.constants.SonarConstant.facets;
+import static cn.machaojin.constants.SonarConstant.fields;
 
 /**
  * @author Ma Chaojin
@@ -38,29 +44,38 @@ public class CreateProjectService {
     private final ProjectService projectService;
     private final IssueService issueService;
     private final RedisUtil redisUtil;
+    private final JGitService gitService;
+    private final DeveloperService developerService;
 
 
     public void createProject(WebSocketSession session, WebSocketMessage<?> message) throws IOException {
         Project project = JSONObject.parseObject(message.getPayload().toString(), Project.class);
         String fileName = sonarQubeConfig.getBasePackage();
-        File file = new File(fileName);
+        String path = getProjectAbsolutelyPath(fileName, project.getUrl());
+        File file = new File(path);
         String commandLine = generatorCommandLine(project);
         //创建文件夹
-        String path = getProjectAbsolutelyPath(fileName, project.getUrl());
         session.sendMessage(new TextMessage("创建文件夹"));
         session.sendMessage(new TextMessage("10"));
-        if (!createFile(file)) {
+        if (createFile(file)) {
             session.sendMessage(new TextMessage("文件夹存在！直接启动分析！"));
             session.sendMessage(new TextMessage("20"));
+            try {
+                jGitAnalyze(session, path);
+                session.sendMessage(new TextMessage("JGit分析失败！"));
+            } catch (Exception exception) {
+                exception.printStackTrace();
+                return;
+            }
             startSonarQube(session, path, commandLine);
             session.close();
             return;
         }
         session.sendMessage(new TextMessage("创建文件夹成功"));
-
         session.sendMessage(new TextMessage("20"));
         session.sendMessage(new TextMessage("开始克隆仓库"));
         session.sendMessage(new TextMessage("30"));
+        file = new File(fileName);
         if (!carryOut(file, "git clone --progress " + project.getUrl(), session)) {
             session.sendMessage(new TextMessage("克隆仓库失败！请检查"));
             session.sendMessage(new TextMessage("exception"));
@@ -69,7 +84,13 @@ public class CreateProjectService {
         }
         session.sendMessage(new TextMessage("克隆仓库成功"));
         session.sendMessage(new TextMessage("40"));
-
+        try {
+            jGitAnalyze(session, path);
+            session.sendMessage(new TextMessage("JGit分析失败！"));
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return;
+        }
         if (!"Maven".equals(project.getType())) {
             session.sendMessage(new TextMessage("55"));
             session.sendMessage(new TextMessage("添加sonar-project.properties文件"));
@@ -86,6 +107,28 @@ public class CreateProjectService {
         startSonarQube(session, path, commandLine);
     }
 
+    private void jGitAnalyze(WebSocketSession session, String path) throws IOException {
+        session.sendMessage(new TextMessage("JGit开始分析"));
+        try {
+            gitService.analyzeGit(path);
+        } catch (Exception e) {
+            try {
+                session.sendMessage(new TextMessage("JGit分析失败"));
+            } catch (IOException ioException) {
+                try {
+                    session.sendMessage(new TextMessage(ioException.getMessage()));
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                ioException.printStackTrace();
+                throw new RuntimeException(ioException);
+            }
+            e.printStackTrace();
+            return;
+        }
+        session.sendMessage(new TextMessage("JGit开始完成"));
+    }
+
     private String generatorCommandLine(Project project) {
         StringBuilder result = new StringBuilder();
         if ("Maven".equals(project.getType())) {
@@ -94,7 +137,7 @@ public class CreateProjectService {
             // 生成不包含"-"的UUID
             String projectKey = UUID.randomUUID().toString().replace("-", "");
             LambdaQueryWrapper<Project> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Project::getName,project.getName());
+            wrapper.eq(Project::getName, project.getName());
             Project serviceOne = projectService.getOne(wrapper);
             if (serviceOne != null && serviceOne.getSonarKey() != null && !serviceOne.getSonarKey().isEmpty()) {
                 projectKey = serviceOne.getSonarKey();
@@ -178,11 +221,7 @@ public class CreateProjectService {
         if (file.exists()) {
             return Boolean.TRUE;
         }
-        boolean mkdir = file.mkdir();
-        if (!mkdir) {
-            return Boolean.FALSE;
-        }
-        return Boolean.TRUE;
+        return Boolean.FALSE;
     }
 
     public Boolean carryOut(File directory, String command, WebSocketSession session) {
@@ -224,6 +263,9 @@ public class CreateProjectService {
             // 等待命令执行结束
             int exitCode = process.waitFor();
             session.sendMessage(new TextMessage("\nExited with error code : " + exitCode));
+            if (exitCode != 0) {
+                return Boolean.FALSE;
+            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             return Boolean.FALSE;
@@ -234,42 +276,50 @@ public class CreateProjectService {
     public void analyzeProject() {
         //获取所有的项目信息
         SearchResult searchResult = qualityGateClient.searchProjects(
-                50,
-                "reliability_rating%2Csecurity_rating%2Csecurity_review_rating%2Csqale_rating%2Ccoverage%2Cduplicated_lines_density%2Cncloc%2Calert_status%2Clanguages%2Ctags%2Cqualifier",
-                "analysisDate%2CleakPeriodDate", "", "");
+                500,
+                facets,
+                fields, "", "");
         for (Component component : searchResult.getComponents()) {
             LambdaQueryWrapper<Project> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Project::getName,component.getName());
-            AnalysisResult analysisResult = qualityGateClient.searchIssues(
-                    component.getKey(),
-                    "FILE_LINE",
-                    "CONFIRMED%2COPEN",
-                    500,
-                    1,
-                    "_all",
-                    "Asia%2FShanghai"
-            );
-            List<Issues> resultIssues = analysisResult.getIssues();
-            //先删掉这个项目的所有问题
-            issueService.remove(new LambdaQueryWrapper<>(Issue.class).eq(Issue::getProjectName,component.getName()));
-            for (Issues resultIssue : resultIssues) {
-                Issue issue = Issue
-                        .builder()
-                        .projectName(component.getName())
-                        .issueCreator(resultIssue.getAuthor())
-                        .issueType(resultIssue.getType())
-                        .isResolved(resultIssue.getStatus())
-                        .description(resultIssue.getMessage())
-                        .score(getScore(resultIssue.getType()))
-                        .issueKey(resultIssue.getKey())
-                        .build();
-                issueService.save(issue);
-                redisUtil.set(resultIssue.getKey(),JSONObject.toJSONString(resultIssue));
-            }
-            projectService.update(Project.builder().sonarKey(component.getKey()).issueCount(analysisResult.getTotal()).build(),wrapper);
+            wrapper.eq(Project::getName, component.getName());
+            AnalysisResult analysisResult = getAnalysisResult(component);
+            projectService.update(Project.builder().sonarKey(component.getKey()).issueCount(analysisResult.getTotal()).build(), wrapper);
         }
     }
-    private Integer getScore(String issueType){
+
+    public AnalysisResult getAnalysisResult(Component component) {
+        AnalysisResult analysisResult = qualityGateClient.searchIssues(
+                component.getKey(),
+                "FILE_LINE",
+                "CONFIRMED%2COPEN",
+                500,
+                1,
+                "_all",
+                "Asia%2FShanghai"
+        );
+        List<Issues> resultIssues = analysisResult.getIssues();
+        //先删掉这个项目的所有问题
+        issueService.remove(new LambdaQueryWrapper<>(Issue.class).eq(Issue::getProjectName, component.getName()));
+        for (Issues resultIssue : resultIssues) {
+            List<Developer> list = developerService.list(new LambdaQueryWrapper<>(Developer.class).eq(Developer::getEmail, resultIssue.getAuthor()).eq(Developer::getName, component.getName()));
+            Developer developer = (list != null && !list.isEmpty()) ? list.get(0) : null;
+            Issue issue = Issue
+                    .builder()
+                    .projectName(component.getName())
+                    .issueCreator(developer != null ? developer.getName() : resultIssue.getAuthor())
+                    .issueType(resultIssue.getType())
+                    .isResolved(resultIssue.getStatus())
+                    .description(resultIssue.getMessage())
+                    .score(getScore(resultIssue.getType()))
+                    .issueKey(resultIssue.getKey())
+                    .build();
+            issueService.save(issue);
+            redisUtil.set(resultIssue.getKey(), JSONObject.toJSONString(resultIssue));
+        }
+        return analysisResult;
+    }
+
+    private Integer getScore(String issueType) {
         return switch (issueType) {
             case "CODE_SMELL" -> 10;
             case "BUG" -> 20;

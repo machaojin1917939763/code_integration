@@ -1,6 +1,8 @@
 package cn.machaojin.feign;
 
+import cn.machaojin.domain.sonar.component.Project;
 import cn.machaojin.domain.sonar.issue_snippets.ComponentDetails;
+import cn.machaojin.domain.sonar.measure.Measures;
 import cn.machaojin.domain.sonar.search.AnalysisResult;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
 import cn.machaojin.domain.sonar.show.RuleDetail;
@@ -114,4 +116,11 @@ public interface QualityGateClient {
 
     @PostMapping("/api/issues/add_comment")
     String addComment(@RequestParam String issue,@RequestParam String text);
+
+    @GetMapping("/api/measures/search")
+    Measures getProjectDetail(@RequestParam String projectKeys, @RequestParam String metricKeys);
+
+    @GetMapping("/api/navigation/component")
+    Project getProjectIntroduce(@RequestParam String component);
+
 }

@@ -15,4 +15,6 @@ public class SonarQubeConfig {
     private String baseUrl;
     private String token;
     private String basePackage;
+    private String password;
+    private String username;
 }

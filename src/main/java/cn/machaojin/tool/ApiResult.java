@@ -39,7 +39,7 @@ public class ApiResult {
     }
 
     public static ApiResult error(String message) {
-        return new ApiResult(SUCCESS, message);
+        return new ApiResult(ERROR, message);
     }
 
     public static ApiResult error(Integer code, String message) {

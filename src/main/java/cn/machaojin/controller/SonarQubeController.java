@@ -2,19 +2,25 @@ package cn.machaojin.controller;
 
 import cn.machaojin.annotation.CodeLog;
 import cn.machaojin.annotation.JwtIgnore;
+import cn.machaojin.domain.sonar.component.Project;
 import cn.machaojin.domain.sonar.issue_snippets.ComponentDetails;
+import cn.machaojin.domain.sonar.measure.Measures;
 import cn.machaojin.domain.sonar.search.AnalysisResult;
 import cn.machaojin.domain.sonar.search.Comment;
 import cn.machaojin.domain.sonar.search.Issues;
+import cn.machaojin.domain.sonar.search_projects.Component;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
 import cn.machaojin.domain.sonar.show.RuleDetail;
 import cn.machaojin.dto.CommentDto;
 import cn.machaojin.feign.QualityGateClient;
+import cn.machaojin.service.ProjectService;
+import cn.machaojin.service.websocket.CreateProjectService;
 import cn.machaojin.tool.ApiResult;
 import cn.machaojin.tool.RedisUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import static cn.machaojin.constants.SonarConstant.metricKeys;
 
 /**
  * @author Ma Chaojin
@@ -37,6 +45,8 @@ import java.util.Map;
 public class SonarQubeController {
     private final QualityGateClient qualityGateClient;
     private final RedisUtil redisUtil;
+    private final CreateProjectService createProjectService;
+    private final ProjectService projectService;
 
 
     @CodeLog
@@ -53,12 +63,12 @@ public class SonarQubeController {
     @CodeLog
     @JwtIgnore
     @GetMapping("/issues/search")
-    public ApiResult issuesSearch(){
+    public ApiResult issuesSearch(@RequestBody String projectKey){
         AnalysisResult analysisResult = qualityGateClient.searchIssues(
-                "cn.machaojin%3ACodeIntegration",
+                projectKey,
                 "FILE_LINE",
                 "CONFIRMED%2COPEN",
-                100,
+                500,
                 1,
                 "_all",
                 "Asia%2FShanghai"
@@ -120,6 +130,35 @@ public class SonarQubeController {
         issues.setComments(list);
         redisUtil.set((String) issue.get("key"), JSON.toJSONString(issues));
         return ApiResult.success(comment);
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @PostMapping("/measure/get_project_detail")
+    public ApiResult getProjectDetail(@RequestBody String projectKey){
+        Measures projectDetail = qualityGateClient.getProjectDetail(
+                projectKey.trim().replace("\"", "")
+                , metricKeys);
+        return ApiResult.success(projectDetail);
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @PostMapping("/navigation/get_project_introduce")
+    public ApiResult getProjectIntroduce(@RequestBody String projectKey){
+        Project projectIntroduce = qualityGateClient.getProjectIntroduce(
+                projectKey.trim().replace("\"", ""));
+        return ApiResult.success(projectIntroduce);
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @PostMapping("/issue/refresh_issue")
+    public ApiResult refreshIssue(@RequestBody String projectKey){
+        projectKey = projectKey.trim().replace("\"","");
+        cn.machaojin.domain.Project project = projectService.getOne(new LambdaQueryWrapper<>(cn.machaojin.domain.Project.class).eq(cn.machaojin.domain.Project::getSonarKey, projectKey));
+        createProjectService.getAnalysisResult(Component.builder().key(project.getSonarKey()).name(project.getName()).build());
+        return ApiResult.success();
     }
 
 }

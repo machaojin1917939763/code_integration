@@ -6,6 +6,7 @@ package cn.machaojin.constants;
  */
 public class StateConstant {
     public static final Integer SUCCESS = 200;
+    public static final Integer ERROR = 500;
     public static final String SUCCESS_MESSAGE = "操作成功";
     public static final String TYPE_SUCCESS = "success";
     public static final String TYPE_ERROR = "error";
