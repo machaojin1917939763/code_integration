@@ -5,14 +5,17 @@ import cn.machaojin.controller.baseController.ApiController;
 import cn.machaojin.domain.Issue;
 import cn.machaojin.service.IssueService;
 import cn.machaojin.tool.ApiResult;
+import cn.machaojin.tool.RedisUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Serializable;
 import java.util.List;
 
+import static cn.machaojin.constants.UserConstant.USER_LOGIN;
 import static cn.machaojin.tool.ApiResult.success;
 
 /**
@@ -23,7 +26,10 @@ import static cn.machaojin.tool.ApiResult.success;
  */
 @RestController
 @RequestMapping("/issue")
+@RequiredArgsConstructor
 public class IssueController extends ApiController {
+    private final RedisUtil redisUtil;
+
     /**
      * 服务对象
      */
@@ -33,7 +39,6 @@ public class IssueController extends ApiController {
     /**
      * 分页查询所有数据
      *
-     * @param page  分页对象
      * @param issue 查询实体
      * @return 所有数据
      */
@@ -75,6 +80,8 @@ public class IssueController extends ApiController {
      */
     @PutMapping
     public ApiResult update(@RequestBody Issue issue) {
+        Object object = redisUtil.get(USER_LOGIN);
+        issue.setResolver(object.toString());
         return success(this.issueService.updateById(issue));
     }
 

@@ -1,9 +1,7 @@
 package cn.machaojin.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,6 +14,7 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="developer_issue_relation")
 @Data
+@Builder
 public class DeveloperIssueRelation implements Serializable {
     /**
      * 
@@ -26,7 +25,7 @@ public class DeveloperIssueRelation implements Serializable {
     /**
      * 问题ID
      */
-    private Integer issueId;
+    private String issueId;
 
     /**
      * 开发人员ID
@@ -36,21 +35,25 @@ public class DeveloperIssueRelation implements Serializable {
     /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private String creator;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
     /**
      * 更新者
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private String updater;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
     @TableField(exist = false)

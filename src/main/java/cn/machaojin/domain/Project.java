@@ -1,10 +1,10 @@
 package cn.machaojin.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="project")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Project implements Serializable {
     /**
      * 
@@ -27,6 +30,11 @@ public class Project implements Serializable {
      * 项目名称
      */
     private String name;
+
+    /**
+     * sonar唯一值
+     */
+    private String sonarKey;
 
     /**
      * 项目地址
@@ -49,33 +57,27 @@ public class Project implements Serializable {
     private Integer issueCount;
 
     /**
-     * 问题ID
-     */
-    private Integer issueId;
-
-    /**
-     * 开发人员表ID
-     */
-    private Integer developerId;
-
-    /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private String creator;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
     /**
      * 更新者
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private String updater;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
     @TableField(exist = false)
@@ -99,8 +101,6 @@ public class Project implements Serializable {
             && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
             && (this.getResponsiblePerson() == null ? other.getResponsiblePerson() == null : this.getResponsiblePerson().equals(other.getResponsiblePerson()))
             && (this.getIssueCount() == null ? other.getIssueCount() == null : this.getIssueCount().equals(other.getIssueCount()))
-            && (this.getIssueId() == null ? other.getIssueId() == null : this.getIssueId().equals(other.getIssueId()))
-            && (this.getDeveloperId() == null ? other.getDeveloperId() == null : this.getDeveloperId().equals(other.getDeveloperId()))
             && (this.getCreator() == null ? other.getCreator() == null : this.getCreator().equals(other.getCreator()))
             && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
             && (this.getUpdater() == null ? other.getUpdater() == null : this.getUpdater().equals(other.getUpdater()))
@@ -117,8 +117,6 @@ public class Project implements Serializable {
         result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
         result = prime * result + ((getResponsiblePerson() == null) ? 0 : getResponsiblePerson().hashCode());
         result = prime * result + ((getIssueCount() == null) ? 0 : getIssueCount().hashCode());
-        result = prime * result + ((getIssueId() == null) ? 0 : getIssueId().hashCode());
-        result = prime * result + ((getDeveloperId() == null) ? 0 : getDeveloperId().hashCode());
         result = prime * result + ((getCreator() == null) ? 0 : getCreator().hashCode());
         result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
         result = prime * result + ((getUpdater() == null) ? 0 : getUpdater().hashCode());
@@ -138,8 +136,6 @@ public class Project implements Serializable {
         sb.append(", type=").append(type);
         sb.append(", responsiblePerson=").append(responsiblePerson);
         sb.append(", issueCount=").append(issueCount);
-        sb.append(", issueId=").append(issueId);
-        sb.append(", developerId=").append(developerId);
         sb.append(", creator=").append(creator);
         sb.append(", createdAt=").append(createdAt);
         sb.append(", updater=").append(updater);

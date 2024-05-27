@@ -1,10 +1,10 @@
 package cn.machaojin.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="developer")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Developer implements Serializable {
     /**
      * 
@@ -24,9 +27,24 @@ public class Developer implements Serializable {
     private Integer id;
 
     /**
+     * 开发人员头像
+     */
+    private String avatar;
+
+    /**
      * 开发人员姓名
      */
     private String name;
+
+    /**
+     * 开发人员姓名
+     */
+    private String password;
+
+    /**
+     * 开发人员姓名
+     */
+    private String loginStatus;
 
     /**
      * 性别
@@ -71,21 +89,25 @@ public class Developer implements Serializable {
     /**
      * 创建者
      */
+    @TableField(fill = FieldFill.INSERT)
     private String creator;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
     /**
      * 更新者
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private String updater;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
     @TableField(exist = false)

@@ -3,7 +3,7 @@ package cn.machaojin.controller;
 
 import cn.machaojin.controller.baseController.ApiController;
 import cn.machaojin.domain.Project;
-import cn.machaojin.service.ProjectService;
+import cn.machaojin.service.impl.ProjectServiceImpl;
 import cn.machaojin.tool.ApiResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,7 +28,7 @@ public class ProjectController extends ApiController {
      * 服务对象
      */
     @Autowired
-    private ProjectService projectService;
+    private ProjectServiceImpl projectService;
 
     /**
      * 分页查询所有数据
@@ -63,6 +63,7 @@ public class ProjectController extends ApiController {
      */
     @PostMapping
     public ApiResult insert(@RequestBody Project project) {
+
         return success(this.projectService.save(project));
     }
 
