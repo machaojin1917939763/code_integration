@@ -78,7 +78,7 @@ public class JGitService {
             String email = (split[1] == null || split[1].isEmpty()) ? "" : split[1];
             Developer serviceOne = developerService.getOne(new LambdaQueryWrapper<>(Developer.class).eq(Developer::getName, name).eq(Developer::getEmail, email));
             if (serviceOne == null) {
-                developerService.save(Developer.builder().avatar(AVATAR).email(email).creator("admin").name(name).score(lines * 100).password("123456").build());
+                developerService.save(Developer.builder().avatar(AVATAR).email(email).name(name).score(lines * 100).password("123456").build());
             }else {
                 serviceOne.setScore(lines * 100);
                 developerService.updateById(serviceOne);

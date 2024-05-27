@@ -10,6 +10,7 @@ import cn.machaojin.dto.UserDto;
 import cn.machaojin.service.DeveloperService;
 import cn.machaojin.tool.ApiResult;
 import cn.machaojin.tool.JwtTokenUtil;
+import cn.machaojin.tool.RedisUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+
+import static cn.machaojin.constants.UserConstant.USER_LOGIN;
 
 /**
  * @author: Ma, Chaojin(C | TT - 33)
@@ -33,6 +36,7 @@ public class LoginController {
 
     private final DeveloperService developerService;
     private final SonarQubeConfig sonarQubeConfig;
+    private final RedisUtil redisUtil;
 
     @CodeLog
     @JwtIgnore
@@ -42,6 +46,7 @@ public class LoginController {
             String token = JwtTokenUtil.createToken(JSON.toJSONString(user));
             response.setHeader(JwtTokenUtil.AUTH_HEADER_KEY, token);
             log.info("{}", token);
+            redisUtil.set(USER_LOGIN, user.getUsername());
             return ApiResult.success(LoginTokenDto.builder().token(token).build());
         }
         Developer serviceOne = developerService.getOne(new LambdaQueryWrapper<>(Developer.class).eq(Developer::getName, user.getUsername()).eq(Developer::getPassword, user.getPassword()));
@@ -50,6 +55,7 @@ public class LoginController {
             response.setHeader(JwtTokenUtil.AUTH_HEADER_KEY, token);
             serviceOne.setLoginStatus("已登录");
             developerService.updateById(serviceOne);
+            redisUtil.set(USER_LOGIN, user.getUsername());
             return ApiResult.success(LoginTokenDto.builder().token(token).build());
         }
         return ApiResult.error("用户名或者密码错误");
@@ -64,7 +70,7 @@ public class LoginController {
             return ApiResult.success(
                     User.builder()
                             .name("Ma Chaojin")
-                            .avatar("https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png")
+                            .avatar("https://message-stack.oss-cn-beijing.aliyuncs.com/images/%E5%A4%B4%E5%83%8F.jpg")
                             .userid("")
                             .email("1917939763@qq.com")
                             .build());
@@ -91,6 +97,25 @@ public class LoginController {
     @JwtIgnore
     @PostMapping("/outLogin")
     public ApiResult outLogin() {
+        List<Developer> list = developerService.list();
+        for (Developer developer : list) {
+            developer.setLoginStatus("未登录");
+            developerService.updateById(developer);
+        }
+        redisUtil.delete(USER_LOGIN);
         return ApiResult.success();
+    }
+
+    @CodeLog
+    @JwtIgnore
+    @GetMapping("/admin")
+    public ApiResult getAdmin() {
+        return ApiResult.success(
+                User.builder()
+                        .name("Ma Chaojin")
+                        .avatar("https://message-stack.oss-cn-beijing.aliyuncs.com/images/%E5%A4%B4%E5%83%8F.jpg")
+                        .userid("")
+                        .email("1917939763@qq.com")
+                        .build());
     }
 }

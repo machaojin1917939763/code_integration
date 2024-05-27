@@ -1,6 +1,7 @@
 package cn.machaojin.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
  */
 @TableName(value ="developer_issue_relation")
 @Data
+@Builder
 public class DeveloperIssueRelation implements Serializable {
     /**
      * 
@@ -23,7 +25,7 @@ public class DeveloperIssueRelation implements Serializable {
     /**
      * 问题ID
      */
-    private Integer issueId;
+    private String issueId;
 
     /**
      * 开发人员ID

@@ -1,17 +1,13 @@
 package cn.machaojin.service.websocket;
 
 import cn.machaojin.config.SonarQubeConfig;
-import cn.machaojin.domain.Developer;
-import cn.machaojin.domain.Issue;
-import cn.machaojin.domain.Project;
+import cn.machaojin.domain.*;
 import cn.machaojin.domain.sonar.search.AnalysisResult;
 import cn.machaojin.domain.sonar.search.Issues;
 import cn.machaojin.domain.sonar.search_projects.Component;
 import cn.machaojin.domain.sonar.search_projects.SearchResult;
 import cn.machaojin.feign.QualityGateClient;
-import cn.machaojin.service.DeveloperService;
-import cn.machaojin.service.IssueService;
-import cn.machaojin.service.ProjectService;
+import cn.machaojin.service.*;
 import cn.machaojin.service.jgit.JGitService;
 import cn.machaojin.tool.RedisUtil;
 import com.alibaba.fastjson2.JSONObject;
@@ -46,6 +42,8 @@ public class CreateProjectService {
     private final RedisUtil redisUtil;
     private final JGitService gitService;
     private final DeveloperService developerService;
+    private final DeveloperIssueRelationService developerIssueRelationService;
+    private final ProjectIssueRelationService projectIssueRelationService;
 
 
     public void createProject(WebSocketSession session, WebSocketMessage<?> message) throws IOException {
@@ -196,6 +194,8 @@ public class CreateProjectService {
         session.sendMessage(new TextMessage("SonarQube分析结束"));
         session.sendMessage(new TextMessage("100"));
         session.close();
+        //更新key
+
     }
 
     private Boolean sonarQube(String path, WebSocketSession session, String commandLine) {
@@ -298,10 +298,8 @@ public class CreateProjectService {
                 "Asia%2FShanghai"
         );
         List<Issues> resultIssues = analysisResult.getIssues();
-        //先删掉这个项目的所有问题
-        issueService.remove(new LambdaQueryWrapper<>(Issue.class).eq(Issue::getProjectName, component.getName()));
         for (Issues resultIssue : resultIssues) {
-            List<Developer> list = developerService.list(new LambdaQueryWrapper<>(Developer.class).eq(Developer::getEmail, resultIssue.getAuthor()).eq(Developer::getName, component.getName()));
+            List<Developer> list = developerService.list(new LambdaQueryWrapper<>(Developer.class).eq(Developer::getEmail, resultIssue.getAuthor()));
             Developer developer = (list != null && !list.isEmpty()) ? list.get(0) : null;
             Issue issue = Issue
                     .builder()
@@ -313,7 +311,25 @@ public class CreateProjectService {
                     .score(getScore(resultIssue.getType()))
                     .issueKey(resultIssue.getKey())
                     .build();
-            issueService.save(issue);
+            assert developer != null;
+            //如果问题存在就更新，如果问题不存在，就新增
+            Issue one = issueService.getOne(new LambdaQueryWrapper<>(Issue.class).eq(Issue::getIssueKey, resultIssue.getKey()));
+            if (one == null) {
+                issueService.save(issue);
+                DeveloperIssueRelation developerIssueRelation =DeveloperIssueRelation.builder()
+                        .developerId(issue.getId()).issueId(resultIssue.getKey()).build();
+                developerIssueRelationService.save(developerIssueRelation);
+                projectIssueRelationService.save(ProjectIssueRelation.builder().projectId(component.getKey()).issueId(resultIssue.getKey()).build());
+            }else {
+                issue.setId(one.getId());
+                issueService.updateById(issue);
+            }
+            //如果关系表中存在问题与开发者的关系就不更新积分
+            DeveloperIssueRelation developerIssueRelationServiceOne = developerIssueRelationService.getOne(new LambdaQueryWrapper<>(DeveloperIssueRelation.class).eq(DeveloperIssueRelation::getIssueId, resultIssue.getKey()));
+            if (developerIssueRelationServiceOne == null){
+                developer.setScore(developer.getScore() - getScore(resultIssue.getType()));
+                developerService.updateById(developer);
+            }
             redisUtil.set(resultIssue.getKey(), JSONObject.toJSONString(resultIssue));
         }
         return analysisResult;
@@ -323,6 +339,7 @@ public class CreateProjectService {
         return switch (issueType) {
             case "CODE_SMELL" -> 10;
             case "BUG" -> 20;
+            case "VULNERABILITY" -> 15;
             default -> 5;
         };
     }

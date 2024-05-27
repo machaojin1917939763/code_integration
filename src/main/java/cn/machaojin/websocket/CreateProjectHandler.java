@@ -3,6 +3,7 @@ package cn.machaojin.websocket;
 import cn.machaojin.service.websocket.CreateProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -30,13 +31,17 @@ public class CreateProjectHandler implements WebSocketHandler {
         log.info("CreateProjectHandler收到消息{}",message);
         try {
             createProjectService.createProject(session,message);
+            createProjectService.analyzeProject();
         }catch (Exception exception){
             exception.printStackTrace();
-            return;
         }
-        Thread.sleep(20 * 1000);
-        createProjectService.analyzeProject();
 
+    }
+
+    @Scheduled(fixedRate = 5000 * 30)
+    public void search(){
+        log.info("定时任务开始执行！");
+        createProjectService.analyzeProject();
     }
 
     @Override
